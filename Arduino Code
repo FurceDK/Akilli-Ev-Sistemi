@@ -1,0 +1,103 @@
+//#include <SoftwareSerial.h>
+//SoftwareSerial iletisim(7,6);//RX , TX
+int led1 =13;                   
+int led2 =12;                    
+int buzzerPin =11;
+int pirPin = 10;
+int rolebobin = 5;
+int kontrol=4;
+int motorcalis=3;
+int ledcalis=2;
+int hareket;
+int sensor = A1;                 
+int x=0;                         
+float voltaj,santigrat;
+void setup() {
+  Serial.begin(9600);            //SERİ MONİTOR İÇİN
+  //iletisim.begin(9600);          //BLUETOOTH İÇİN
+  pinMode(9 , INPUT);            
+  pinMode (led1, OUTPUT);        
+  pinMode (led2, OUTPUT);
+  pinMode (buzzerPin, OUTPUT);
+  pinMode (sensor, INPUT);
+  pinMode (pirPin, INPUT);
+  pinMode (rolebobin , OUTPUT);
+  pinMode (kontrol , OUTPUT);
+  pinMode (motorcalis , OUTPUT);
+  pinMode (ledcalis , OUTPUT);
+}
+
+void loop() {
+digitalWrite(ledcalis,1);    
+int ackapa=digitalRead(kontrol);
+if (ackapa >0)
+{
+  digitalWrite(rolebobin,0);
+  digitalWrite(motorcalis,1);
+  delay(300);
+} 
+else
+{
+  digitalWrite(rolebobin,1);
+  digitalWrite(motorcalis,1);
+  delay(300);
+}    
+
+hareket = digitalRead(pirPin);        //HAREKET SENSÖRÜ
+Serial.println(hareket);  
+if(hareket == HIGH)
+{
+  Serial.println("Hareket Tespit Edildi");
+  //iletisim.println("HAREKET TESPİT EDİLDİ");  //Telefona haber yollamak için
+  tone(buzzerPin,1000);
+  delay(300);
+  noTone(buzzerPin);
+}
+else 
+{
+  noTone(buzzerPin);
+}
+  
+x=analogRead(A0);                 // SICAKLIK SENSÖRÜ
+voltaj=x*(5.0/1023.0);            
+santigrat=(voltaj/0.01)-50;
+
+Serial.print("Voltaj: ");
+Serial.print(voltaj);
+Serial.print("V| ");
+
+Serial.print("Sıcaklık: ");
+Serial.print(santigrat);
+//iletisim.println("Şuanki ortam sıcaklığı =", santigrat);  //Telefonda ortam sıcaklığını göstermek için   
+Serial.print("\xC2\xB0");
+Serial.println("C | ");
+  
+int currentState = digitalRead(9);       //EĞİLME SENSÖRÜ
+Serial.print("Current state: ");
+Serial.println(currentState);
+if (currentState > 0)
+{
+  //iletisim.println("SARSINTI OLUYOR!");   //Sensör sallanmaya başladığında telefona uyarı göndermesi için.
+  tone(buzzerPin,1000);
+}
+else 
+{
+  noTone(buzzerPin);
+}
+
+int sensorDeger = analogRead(sensor);       //GAZ SENSÖRÜ
+Serial.println (sensorDeger);
+if (sensorDeger <= 85){
+  digitalWrite(led1, HIGH);
+  digitalWrite(led2,LOW);
+  noTone(buzzerPin);
+}
+else if (sensorDeger > 86){
+  digitalWrite(led1,LOW);
+  digitalWrite(led2,HIGH);
+  tone(buzzerPin,1000);
+  //iletisim.println("Evde duman tespit edildi!");  //Gaz sensörü alarm verdiğinde telefona uyarı göndermesi için.
+}
+Serial.println("-------------");
+delay(300);
+}
